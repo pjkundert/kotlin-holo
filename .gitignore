@@ -1,0 +1,4 @@
+/.share
+.gradle/
+.idea/
+build/
