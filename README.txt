@@ -55,3 +55,5 @@ Table of Contents
 
   • Provide Nix Flake environment w/ build tools and SDKs:
     <https://github.com/tadfisher/android-nixpkgs>
+  • Add access to Holochain dev environment with
+    <https://github.com/spartan-holochain-counsel/nix-overlay>
