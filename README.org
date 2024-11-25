@@ -1,0 +1,39 @@
+#+title: Kotlin MultiPlatform App with Nix Build Environment
+#+author: Perry Kundert
+#+email: perry@kundert.ca
+#+date: 2024-11-25 11:11:00
+#+draft: false
+#+EXPORT_FILE_NAME: README
+#+STARTUP: org-startup-with-inline-images inlineimages
+#+STARTUP: org-latex-tables-centered nil
+#+OPTIONS: ^:nil # Disable sub/superscripting with bare _; _{...} still works
+#+OPTIONS: toc:nil
+
+#+PROPERTY: header-args :exports both :results output
+
+#+LATEX_HEADER: \usepackage[margin=1.333in]{geometry}
+
+#+BEGIN_ABSTRACT
+Building a Kotlin app requires a multitude of dev dependencies, usually supplied by installing random
+tools like Android Studio, etc.  This produces a non-deterministic build environment. ([[./README.pdf][PDF]]/[[./README.txt][Text]])
+
+Using Nix, we provide a deterministic build environment, replicable quickly on any suitable platform.
+#+END_ABSTRACT
+
+#+TOC: headlines 2
+
+* Intelli-J Idea IDE
+
+  Run
+  : $ nix-shell
+
+  to gain access to `kdoctor` to analyze your development environment, and `idea` to start Intelli-J Idea.
+
+* Create a Demo Kotlin App
+
+  Follow https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-create-first-app.html to create
+  a demo app.  This is how we produced GreetingsKMP.zip.
+
+* TODO
+
+  - Provide Nix Flake environment w/ build tools and SDKs: https://github.com/tadfisher/android-nixpkgs
