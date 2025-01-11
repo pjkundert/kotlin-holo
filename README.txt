@@ -23,6 +23,7 @@ Table of Contents
 2. Create a Demo Kotlin App
 3. TODO
 4. Project: User Onboarding and Authentication Flow
+.. 1. Unknowns:
 
 
 [PDF] <./README.pdf>
@@ -69,7 +70,14 @@ Table of Contents
   HDI v0.4.0, with JavaScript binding to allow clients to interact via
   WebSockets.
 
-  **Capabilities:**
+
+4.1 Unknowns:
+─────────────
+
+  • SLMs
+
+
+  **Capabilities:
   • A simple authentication API compatible with Kotlin client apps.
   • A simple onboarding flow that supports email + password for agent
     key generation.
@@ -77,7 +85,7 @@ Table of Contents
   • Support for advanced users using external hardware wallets for key
     generation and recovery.
 
-  **User Stories:**
+  **User Stories:
   1. As a new user, I want to create a new agent keypair using an email
      and password, so that I can initialize my identity and start using
      the system.
@@ -94,27 +102,30 @@ Table of Contents
      designated recovery partners or an external hardware wallet, so
      that I can maintain access to my identity securely.
 
-  **Tasks:**
+  **Tasks:
 
 
-4.0.1 Project Setup
+4.1.1 Project Setup
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Initialize Holochain Project]
      • Setup Holochain environment with HDK v0.5.0 and HDI v0.4.0.
      • Create new Holochain DNA for the project.
+     • Find out about iOS support
+     • Get Holochain running on all platforms
 
 
 [Initialize Holochain Project]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/1>
+<https://github.com/pjkundert/kotlin-holo/issues/1>
 
 
-4.0.2 Onboarding Flow
+4.1.2 Onboarding Flow
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Create Keypair Generation for Basic Users]
      • Implement keypair generation using email and password.
      • Store generated agent keypair in Holochain.
+     • Identity logic re: recovering source chains on other devices
 
   2. [Designate Recovery Partners]
      • Implement functionality to designate 2+ recovery partners during
@@ -123,13 +134,13 @@ Table of Contents
 
 
 [Create Keypair Generation for Basic Users]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/2>
+<https://github.com/pjkundert/kotlin-holo/issues/2>
 
 [Designate Recovery Partners]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/3>
+<https://github.com/pjkundert/kotlin-holo/issues/3>
 
 
-4.0.3 Authentication Flow
+4.1.3 Authentication Flow
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Implement Simple Authentication API]
@@ -139,10 +150,10 @@ Table of Contents
 
 
 [Implement Simple Authentication API]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/4>
+<https://github.com/pjkundert/kotlin-holo/issues/4>
 
 
-4.0.4 Device Association
+4.1.4 Device Association
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Associate New Device with Existing Identity]
@@ -153,10 +164,10 @@ Table of Contents
 
 
 [Associate New Device with Existing Identity]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/5>
+<https://github.com/pjkundert/kotlin-holo/issues/5>
 
 
-4.0.5 Key Revocation and Recovery
+4.1.5 Key Revocation and Recovery
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Implement Key Revocation and Recovery]
@@ -168,10 +179,10 @@ Table of Contents
 
 
 [Implement Key Revocation and Recovery]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/6>
+<https://github.com/pjkundert/kotlin-holo/issues/6>
 
 
-4.0.6 Advanced User Support
+4.1.6 Advanced User Support
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Support External Hardware Wallets]
@@ -180,10 +191,10 @@ Table of Contents
 
 
 [Support External Hardware Wallets]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/7>
+<https://github.com/pjkundert/kotlin-holo/issues/7>
 
 
-4.0.7 Javascript Binding
+4.1.7 Javascript Binding
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Develop Javascript Binding for Client Interaction]
@@ -194,10 +205,10 @@ Table of Contents
 
 
 [Develop Javascript Binding for Client Interaction]
-<https://github.com/YOUR_USERNAME/YOUR_REPO/issues/8>
+<https://github.com/pjkundert/kotlin-holo/issues/8>
 
 
-4.0.8 Testing and Documentation
+4.1.8 Testing and Documentation
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   1. [Testing]
@@ -211,15 +222,15 @@ Table of Contents
        client apps.
      • Write user guides for basic and advanced users.
 
-  **Milestones:**
+  **Milestones:
 
 
-[Testing] <https://github.com/YOUR_USERNAME/YOUR_REPO/issues/9>
+[Testing] <https://github.com/pjkundert/kotlin-holo/issues/9>
 
-[Documentation] <https://github.com/YOUR_USERNAME/YOUR_REPO/issues/10>
+[Documentation] <https://github.com/YOUR_USERNAME/kotlin-holo/issues/10>
 
 
-4.0.9 Milestone 1: Project Setup and Keypair Generation
+4.1.9 Milestone 1: Project Setup and Keypair Generation
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   • Initialize Holochain project.
@@ -227,21 +238,21 @@ Table of Contents
   • Designate recovery partners.
 
 
-4.0.10 Milestone 2: Authentication API and Device Association
+4.1.10 Milestone 2: Authentication API and Device Association
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   • Develop simple authentication API.
   • Implement device association functionality.
 
 
-4.0.11 Milestone 3: Key Revocation and Recovery
+4.1.11 Milestone 3: Key Revocation and Recovery
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   • Implement key revocation and recovery using recovery partners.
   • Support external hardware wallets for advanced users.
 
 
-4.0.12 Milestone 4: Javascript Binding and Testing
+4.1.12 Milestone 4: Javascript Binding and Testing
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   • Develop Javascript binding for client interaction.
