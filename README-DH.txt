@@ -11,23 +11,24 @@
 A critical requirement to support secure decentralized applications, is
 the ability to compute encryption secrets amongst multiple parties.  The
 Elliptical Curve Diffie-Hellman algorithm supports this, but it must be
-implemented in Holochain's `lair-keystore', which stores and manages all
-cryptographic material for Holochain applications.
+implemented within Holochain's `lair-keystore', which stores and manages
+all cryptographic material for Holochain applications.
 
 For example, to compute some common data between two or more Agents who
-only know eachother's public keys, the shared data can be derived and
+only know the other's public keys, the shared data can be derived and
 used for encryption, but `lair-keystore''s APIs do not currently allow
 it to be used to derive shared data for other uses such as independently
 configuring Holochain DNAs to use a shared DHT, such as required by apps
 like Volla Messages for two- or multi-party communications.  It also
 prevents the implementation of many types of secure backup schemes
-involving off-line Ed25519 keypairs held in Crypto hardware wallets or
-HSMs.
+involving off-line Ed25519 keypairs held in Crypto wallets or HSMs
+(Hardware Signing Modules).
 
-Implements the examples in
-<https://en.wikipedia.org/wiki/Diffie-Hellman>, and proposes
-enhancements to `lair-keystore' to support Holochain applications using
-them.
+Implements the examples in WikiPedia's [Diffie-Hellman] and
+[Eliptical-Curve Diffie-Hellman (ECDH),] demonstrates functionality
+using the Python [crypto-licensing] module's Ed25519/x25519
+implementation, and proposes enhancements to `lair-keystore' to support
+Holochain applications using them.
 
 Table of Contents
 ─────────────────
@@ -43,16 +44,27 @@ Table of Contents
 3. Shared Secret Exposure Risks
 .. 1. Only Use Long-Term Keys for Two-Party Shared Secrets
 .. 2. Use Single-Purpose Keys for Multi-Party Shared Secrets
-4. Implementing in `lair-keystore'
+4. Implementation Using Ed25519 and X25519 Keypairs
+5. Implementing in `lair-keystore'
 .. 1. Computing Common Shared Data Using a Shared Secret
 .. 2. Revealing Intermediate Values for Multi-Party Shared Secrets
 .. 3. Implementing in Holochain
 
 
+[Diffie-Hellman] <https://en.wikipedia.org/wiki/Diffie-Hellman>
+
+[Eliptical-Curve Diffie-Hellman (ECDH),]
+<https://en.wikipedia.org/wiki/Elliptic-curve_Diffie-Hellman>
+
+[crypto-licensing] <https://github.com/pjkundert/crypto-licensing.git>
+
+
 1 Two-Party Shared Secrets
 ══════════════════════════
 
-  A public key is prime modulus of the corresponding private key:
+  In this simple [Diffie-Hellman] example using integers, a public key
+  is prime modulus of the basis primitive root exponentiated to the
+  power of the private key:
 
   \begin{align*}
   A &= g^a \bmod p \\
@@ -70,6 +82,12 @@ Table of Contents
             &= g^{ab} \\
   \end{align*}
 
+  This is adequate to investigate the properties of Diffie-Hellman;
+  later, we will investigate how this translates to multi-party
+  Diffie-Hellman using ECDH via Ed25519 and X25519 keypairs.
+
+
+[Diffie-Hellman] <https://en.wikipedia.org/wiki/Diffie-Hellman>
 
 1.1 Alice and Bob compute a Shared Secret via Diffie-Hellman
 ────────────────────────────────────────────────────────────
@@ -188,7 +206,6 @@ Table of Contents
 ───────────────────────────────────────────────────
 
   ┌────
-  │ 
   │ # Private keys
   │ a = 6   # Alice's private key
   │ b = 15  # Bob's private key
@@ -323,9 +340,6 @@ Table of Contents
   computation/!
 
   ┌────
-  │ # Parameters
-  │ g = 5
-  │ p = 23
   │ keys = {
   │     'a': 6,   # Alice
   │     'b': 15,  # Bob
@@ -436,7 +450,6 @@ Table of Contents
   keypair. Here's a breakdown of the process:
 
   ┌────
-  │ 
   │ # Long-term private keys
   │ a = 6  # Alice's private key
   │ b = 15 # Bob's private key
@@ -478,9 +491,8 @@ Table of Contents
   │     ["Bob", B, g_axc, s_bob],
   │     ["Carol", C, g_axb, s_carol],
   │     None,
-  │     ["Shared secret match", "", "", s_alice == s_bob == s_carol]
+  │     ["Shared secrets match", "", "", s_alice == s_bob == s_carol]
   │ ]
-  │ 
   └────
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -492,17 +504,264 @@ Table of Contents
    Bob                                    19                   16             9 
    Carol                                  21                    3             9 
   ──────────────────────────────────────────────────────────────────────────────
-   Shared secret match                                                     True 
+   Shared secrets match                                                    True 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-4 Implementing in `lair-keystore'
+4 Implementation Using Ed25519 and X25519 Keypairs
+══════════════════════════════════════════════════
+
+  In `crypto-licensing', we have a rudimentary pure-python
+  implementation of Ed25519 and X25519 keypair operations.  Let's
+  demonstrate how these multi-party Diffie-Hellman operations translate.
+
+  ┌────
+  │ import hashlib
+  │ import random
+  │ 
+  │ ##########################################################
+  │ #
+  │ # Curve25519 reference implementation by Matthew Dempsky, from:
+  │ # http://cr.yp.to/highspeed/naclcrypto-20090310.pdf
+  │ 
+  │ P = 2 ** 255 - 19
+  │ A = 486662
+  │ G = 9
+  │ 
+  │ def expmod(b, e, m):
+  │     if e == 0: return 1
+  │     t = expmod(b, e // 2, m) ** 2 % m
+  │     if e & 1: t = (t * b) % m
+  │     return t
+  │ 
+  │ def inv(x):
+  │     return expmod(x, P - 2, P)
+  │ 
+  │ def add(n, m, d):
+  │     (xn, zn) = n
+  │     (xm, zm) = m 
+  │     (xd, zd) = d
+  │     x = 4 * (xm * xn - zm * zn) ** 2 * zd
+  │     z = 4 * (xm * zn - zm * xn) ** 2 * xd
+  │     return (x % P, z % P)
+  │ 
+  │ def double(n):
+  │     (xn, zn) = n
+  │     x = (xn ** 2 - zn ** 2) ** 2
+  │     z = 4 * xn * zn * (xn ** 2 + A * xn * zn + zn ** 2)
+  │     return (x % P, z % P)
+  │ 
+  │ def curve25519( n: int, base: int = G ) -> tuple[int, int]:
+  │     one = (base,1)
+  │     two = double(one)
+  │     # f(m) evaluates to a tuple
+  │     # containing the mth multiple and the
+  │     # (m+1)th multiple of base.
+  │     def f(m):
+  │         if m == 1: return (one, two)
+  │         (pm, pm1) = f(m // 2)
+  │         if (m & 1):
+  │             return (add(pm, pm1, one), double(pm1))
+  │         return (double(pm), add(pm, pm1, one))
+  │     ((x,z), _) = f(n)
+  │     return (x * inv(z)) % P
+  │ 
+  │ def H( m: bytes ) -> bytes:
+  │     return hashlib.sha512(m).digest()
+  │ 
+  │ def curve25519_key( n: int = 0 ) -> int:
+  │     """An curve25519 key as an integer"""
+  │     n = n or random.randint(0,P)
+  │     n &= ~7
+  │     n &= ~(128 << 8 * 31)
+  │     n |= 64 << 8 * 31
+  │     return n
+  │ 
+  │ def bytes_to_int(b: bytes) -> int:
+  │     """Convert bytes to integer"""
+  │     return sum( byte << (8 * i) for i,byte in enumerate( b ))
+  │ 
+  │ def int_to_bytes(n, length=32):
+  │     """Convert integer to fixed-length bytes"""
+  │     return bytes( (n >> (8 * i)) & 0xff for i in range( length ))
+  │ 
+  │ def ed25519_to_curve25519_key( sk: bytes ) -> int:
+  │     """Converts a Ed25519 signing key as bytes to a curve25519 key as an integer"""
+  │     return curve25519_key( bytes_to_int( H( sk )))
+  │ 
+  │ class ECDH:
+  │     """Eliptical Curve Diffie-Hellman.
+  │ 
+  │     Computes intermediate secrets for sharing, and the final shared_secret when an intermediate has
+  │     been receive the includes all other desired parties' Ed25519 keys, using X25519 keys derived
+  │     from the supplied Ed25519 key.
+  │ 
+  │     """
+  │     def __init__(self, ed25519_keypair, desired: set[ bytes ] ):
+  │         """Initialize with provided Ed25519 private key bytes.  Add our public key to the desired
+  │         set, which is assumed to contain all other parties' Ed25519 public keys participating in the
+  │         X25519 shared secret calculation.
+  │ 
+  │         """
+  │         # Store original Ed25519 private key
+  │         self.ed25519_public = ed25519_keypair.vk
+  │         self.ed25519_private = ed25519_keypair.sk
+  │ 
+  │         # Convert to X25519 private key and compute X25519 public key
+  │         self.x25519_private = ed25519_to_curve25519_key( self.ed25519_private )
+  │         self.x25519_public = curve25519( self.x25519_private )
+  │ 
+  │         desired |= {self.ed25519_public}
+  │         self.desired = desired
+  │         self.shared_secret = None
+  │ 
+  │     def initial_intermediate_value(self):
+  │         """Initial intermediate value is private key . G, which is equivalent to the X25519 public key."""
+  │         return self.x25519_public, {self.ed25519_public}
+  │ 
+  │     def compute_intermediate_value(self, received_value: int, included: set[ int ]):
+  │         """Compute intermediate value using X25519; add ours unless already included."""
+  │         if self.x25519_public not in included:
+  │             return curve25519(self.x25519_private, received_value), included | {self.ed25519_public}
+  │         return received_value, included
+  │ 
+  │     def compute_final_secret(self, received_value: int, included: set[ int ] ):
+  │         """Compute final shared secret, from value with all other desired keys already included."""
+  │         assert included | {self.ed25519_public} == self.desired, \
+  │             f"Intermediate value is missing keys: {', '.join( vk.hex for vk in self.desired - included)}" \
+  │             f"; should only have been missing: {self.ed25519_public}"
+  │         self.shared_secret = curve25519(self.x25519_private, received_value)
+  │         return self.shared_secret, self.desired
+  └────
+
+  ━━
+  
+  ━━
+
+  Let's compute a shared secret amongst 3 agents identified by Ed25519
+  keypairs.  First, get some Ed25519 keypairs and identify all the
+  agents involved:
+
+  ┌────
+  │ from crypto_licensing import ed25519
+  │ 
+  │ # Step 1: Create participants with Ed25519 keys; all Ed25519 public keys are added to desired
+  │ desired        = set()
+  │ alice          = ECDH( ed25519.crypto_sign_keypair(), desired )
+  │ bob            = ECDH( ed25519.crypto_sign_keypair(), desired )
+  │ carol          = ECDH( ed25519.crypto_sign_keypair(), desired )
+  │ 
+  │ # Step 2: Convert Ed25519 keys to X25519
+  │ [
+  │     [ "Agent", "Ed25519 Pubkey"],
+  │     None,
+  │     [ "Alice", alice.ed25519_public.hex()],
+  │     [ "Bob",   bob.ed25519_public.hex()],
+  │     [ "Carol", carol.ed25519_public.hex()],
+  │     None,
+  │     [ "Agent", "X25519 Pubkey"],
+  │     None,
+  │     [ "Alice", alice.x25519_public ],
+  │     [ "Bob",   bob.x25519_public ],
+  │     [ "Carol", carol.x25519_public ],
+  │ ]
+  └────
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Agent  Ed25519 Pubkey                                                                
+  ──────────────────────────────────────────────────────────────────────────────────────
+   Alice  a56a0d59a6fa894464cf09d7c4c760a22a4fd721e153b2b69177cb365356094c              
+   Bob    659443b8acbd26f8eba0a3d870594d652add3fb3b606a81d307661892718ec75              
+   Carol  0360f65403fa205ace7f62cad1db08c05de03d19166cb758066e8a82ffc568ed              
+  ──────────────────────────────────────────────────────────────────────────────────────
+   Agent  X25519 Pubkey                                                                 
+  ──────────────────────────────────────────────────────────────────────────────────────
+   Alice  11722978189287417767178142199236895008530449615508821125959258779635908122412 
+   Bob    48922404039020049256071883294689717657343050936162407802900146087903445893501 
+   Carol  46662958203385792074097687659976268510031969811123836182221793185144392879864 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌────
+  │ # Step 3: Alice -> Bob
+  │ ag, ag_includes     = alice.initial_intermediate_value()
+  │ assert ag_includes == {alice.ed25519_public}
+  │ 
+  │ # Step 4: Bob -> Carol
+  │ agb, agb_includes   = bob.compute_intermediate_value( ag, ag_includes )
+  │ assert agb_includes == ag_includes | {bob.ed25519_public}
+  │ 
+  │ # Step 5: Carol computes her secret
+  │ agbc, agbc_includes = carol.compute_final_secret( agb, agb_includes )
+  │ carol_secret        = agbc
+  │ assert agbc_includes == agb_includes | {carol.ed25519_public}
+  │ 
+  │ # Step 6: Bob -> Carol
+  │ bg, bg_includes     = bob.initial_intermediate_value()
+  │ 
+  │ # Step 7: Carol -> Alice
+  │ bgc, bgc_includes   = carol.compute_intermediate_value( bg, bg_includes )
+  │ 
+  │ # Step 8: Alice computes her secret
+  │ bgca, bgca_includes = alice.compute_final_secret( bgc, bgc_includes )
+  │ alice_secret        = bgca
+  │ 
+  │ # Step 9: Carol -> Alice
+  │ cg, cg_includes     = carol.initial_intermediate_value()
+  │ 
+  │ # Step 10: Alice -> Bob
+  │ cga, cga_includes   = alice.compute_intermediate_value( cg, cg_includes )
+  │ 
+  │ # Step 11: Bob computes his secret
+  │ cgab, cgab_includes = bob.compute_final_secret( cga, cga_includes )
+  │ bob_secret          = cgab
+  │ 
+  │ [
+  │     [ "Intermediates", "Value" ],
+  │     None,
+  │     ["Alice -> Bob", ag],
+  │     ["Alice -> Bob -> Carol", agb],
+  │     ["Bob -> Carol", bg],
+  │     ["Bob -> Carol -> Alice", bgc],
+  │     ["Carol -> Alice", cg],
+  │     ["Carol -> Alice -> Bob", cga],
+  │     None,
+  │     [ "Agent", "Final Shared Secret" ],
+  │     None,
+  │     [ "Alice", alice_secret ],
+  │     [ "Bob", bob_secret ],
+  │     [ "Carol", carol_secret ],
+  │     None,
+  │     ["Shared secrets match", alice_secret == bob_secret == carol_secret],
+  │ ]
+  └────
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Intermediates                                                                                  Value 
+  ──────────────────────────────────────────────────────────────────────────────────────────────────────
+   Alice -> Bob           11722978189287417767178142199236895008530449615508821125959258779635908122412 
+   Alice -> Bob -> Carol  30982286926276289305918299348895006073644725984692765795886804697780740192959 
+   Bob -> Carol           48922404039020049256071883294689717657343050936162407802900146087903445893501 
+   Bob -> Carol -> Alice  52185657988903637061983071196636021398130468930524220802503763216156687504731 
+   Carol -> Alice         46662958203385792074097687659976268510031969811123836182221793185144392879864 
+   Carol -> Alice -> Bob  18516242510658465632739895508874866988425354845062630795300305482216567903214 
+  ──────────────────────────────────────────────────────────────────────────────────────────────────────
+   Agent                                                                            Final Shared Secret 
+  ──────────────────────────────────────────────────────────────────────────────────────────────────────
+   Alice                  30197301174599516642352107851844892105617600453953792201050756492984523401759 
+   Bob                    30197301174599516642352107851844892105617600453953792201050756492984523401759 
+   Carol                  30197301174599516642352107851844892105617600453953792201050756492984523401759 
+  ──────────────────────────────────────────────────────────────────────────────────────────────────────
+   Shared secrets match                                                                            True 
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+5 Implementing in `lair-keystore'
 ═════════════════════════════════
 
   The current implementation of `lair-keystore' is missing a few
   features required to effectively utilize ECDH (Eliptical Curve
-  Diffie-Hellman) for Two-Party shared secrets, and is support for
-  N-party shared secrets is missing entirely.
+  Diffie-Hellman) for Two-Party shared secrets, and support for N-party
+  shared secrets is missing entirely.
 
   These capabilities could be implemented /outside/ `lair-keystore'
   (eg. by using `ed25519-dalek' in the Zome's Rust code), but all keys
@@ -516,7 +775,7 @@ Table of Contents
   Therefore, I propose the following enhancements to `lair-keystore':
 
 
-4.1 Computing Common Shared Data Using a Shared Secret
+5.1 Computing Common Shared Data Using a Shared Secret
 ──────────────────────────────────────────────────────
 
   Many situations involving Agent-to-Agent communications require some
@@ -537,7 +796,7 @@ Table of Contents
   and then establish their DNA instances with the shared DHT.
 
 
-4.1.1 Enhance `...CryptoBox...' APIs to Allow Optional `nonce'
+5.1.1 Enhance `...CryptoBox...' APIs to Allow Optional `nonce'
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   There are 3 ways that ChaCha20Poly1305 may be safely used by two
@@ -560,14 +819,20 @@ Table of Contents
   with the same shared secret cipher `key' and different `data', it only
   cryptographically compromises this one application's hashed shared
   secret – not the valuable single underlying Agent-to-Agent shared
-  secret.
+  secret.  Therefore, in the APIs allowing a user-supplied `nonce', a
+  mandatory SHA-256 hash of the shared secret cipher `key' with some
+  user-supplied data (possibly empty) may be advisable.  The goal is to
+  provide a means to arrive at some common output ciphertext between two
+  independent parties, depending only on their public keys, and this
+  approach achieves that goal without risking the cryptographic
+  integrity of the shared secret.
 
   This enhancement is simple, and has limited risk – especially if some
   additional data is required to hash with the computed Diffie-Hellman
   shared secret when used as the cipher `key'.
 
 
-4.2 Revealing Intermediate Values for Multi-Party Shared Secrets
+5.2 Revealing Intermediate Values for Multi-Party Shared Secrets
 ────────────────────────────────────────────────────────────────
 
   For keypairs stored by `lair-keystore' to be used in computing
@@ -611,21 +876,24 @@ Table of Contents
     `nonce' and `data'.
 
 
-4.2.1 Add `...GroupIntermediate...' APIs To Construct Intermediate Values
+5.2.1 Add `...GroupIntermediate...' APIs To Construct Intermediate Values
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
   Receives a value and a set of Public Keys `represented' and `desired',
   and the identity of a locally held private keypair (`ByTag',
   `BySignPubKey', etc.), and:
 
-  1. If adding this private key exponent doesn't satisfy all `desired'
-     keys, return the value with the public key added to `represented'.
+  1. If adding private key exponent(s) found locally in set `desired -
+     represented' doesn't satisfy all `desired' keys, return the value
+     with the public key(s) added to `represented'; return an error if
+     none found.
 
      The caller then forwards the value and `represented' set along to
      the appropriate counterparties as an intermediate value.
 
-  2. If this is the last key required to fulfill the `desired' keys,
-     then store the shared secret and return a success indicator.
+  2. If all key(s) required to fulfill the `desired' are found, then
+     apply them and store the shared secret and return a success
+     indicator.
 
      The caller may then use encryption and decryption operations as for
      any other computed shared secret,
@@ -635,7 +903,7 @@ Table of Contents
      `recipient_pub_key'.
 
 
-4.3 Implementing in Holochain
+5.3 Implementing in Holochain
 ─────────────────────────────
 
   Additional APIs must be added to Holochain's `hdk' and `hdi' to allow
