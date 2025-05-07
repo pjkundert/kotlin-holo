@@ -29,7 +29,10 @@ Modules).
 
 Implements the examples in Wikipedia's [[https://en.wikipedia.org/wiki/Diffie-Hellman][Diffie-Hellman]] and [[https://en.wikipedia.org/wiki/Elliptic-curve_Diffie-Hellman][Eliptical-Curve Diffie-Hellman (ECDH),]]
 demonstrates functionality using the Python [[https://github.com/pjkundert/crypto-licensing.git][crypto-licensing]] module's Ed25519/X25519 implementation,
-and proposes enhancements to =lair-keystore= to support Holochain applications using them.
+and proposes enhancements to =lair-keystore= to support Holochain applications using them; including
+a robust method to ensure that multi-party Diffie-Hellman does /not/ leak the 2-party D-H secret
+between every pair of Agents -- which is exactly the "Intermediate" value shared in the naive
+multi-party Diffie-Hellman computation!
 #+END_ABSTRACT
 
 #+TOC: headlines 2
