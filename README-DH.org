@@ -145,14 +145,14 @@ multi-party Diffie-Hellman computation!
 * Three-Party Shared Secret Implementation
 
   For three-party DH, the structure of the intermediate shared secrets is basically the calculation
-  and sharing of values computed by having each party apply their private key exponent the public
+  and sharing of values computed by having each party apply their private key exponent to the public
   keys of each of their counterparies, and share this with the one remaining counterparty.
 
   We can assume in many practical scenarios that each party has access to (or is provided with) the
   public keys of all desired counterparties.
   - Public keys are well known, or
   - Someone initiates the process by collecting all counterparties' private keys, and sends them to
-    all everyone involved.
+    everyone involved.
 
   However, in this example we'll demonstrate each party creating private keys \( a, b, c \),
   and transmitting them to all counterparties.
@@ -728,7 +728,7 @@ multi-party Diffie-Hellman computation!
         """Eliptical Curve Diffie-Hellman.
 
         Computes intermediate secrets for sharing, and the final shared_secret when an intermediate has
-        been receive the includes all other desired parties' Ed25519 keys, using X25519 keys derived
+        been receive that includes all other desired parties' Ed25519 keys, using X25519 keys derived
         from the supplied Ed25519 key.
 
         """
