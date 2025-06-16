@@ -1,18 +1,18 @@
-              ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-               DIFFIE-HELLMAN KEY EXCHANGE IMPLEMENTATION
+               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                MULTI-PARTY DIFFIE-HELLMAN KEY EXCHANGE
 
                              Perry Kundert
-              ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-                            2025-01-13:00:00
+                          2025-01-07 08:04:28
 
 
-A critical requirement to support secure decentralized applications, is
-the ability to compute encryption secrets amongst multiple parties.  The
-Elliptical Curve Diffie-Hellman algorithm supports this, but it must be
-implemented within Holochain's `lair-keystore', which stores and manages
-all cryptographic material for Holochain applications.
+A critical requirement to support secure decentralized applications is
+the ability to compute cryptographic secrets amongst multiple parties.
+The Elliptic Curve Diffie-Hellman algorithm supports this, but it must
+be implemented within Holochain's `lair-keystore', which stores and
+manages all cryptographic material for Holochain applications.
 
 For example, to compute some common data between two or more Agents who
 only know the other's public keys, the shared data can be derived and
@@ -24,14 +24,15 @@ prevents the implementation of many types of secure backup schemes
 involving off-line Ed25519 keypairs held in Crypto wallets or HSMs
 (Hardware Signing Modules).
 
-Implements the examples in Wikipedia's [Diffie-Hellman] and
-[Eliptical-Curve Diffie-Hellman (ECDH),] demonstrates functionality
-using the Python [crypto-licensing] module's Ed25519/X25519
-implementation, and proposes enhancements to `lair-keystore' to support
-Holochain applications using them; including a robust method to ensure
-that multi-party Diffie-Hellman does /not/ leak the 2-party D-H secret
-between every pair of Agents – which is exactly the "Intermediate" value
-shared in the naive multi-party Diffie-Hellman computation!
+In this paper we implement the examples in Wikipedia's [Diffie-Hellman]
+and [Elliptic-curve Diffie-Hellman (ECDH)] using the Python
+[crypto-licensing] module's Ed25519/X25519 implementation, and propose
+enhancements to `lair-keystore' to support Holochain applications using
+these constructs; including a robust method to ensure that multi-party
+Diffie-Hellman secret sharing does /not/ leak the 2-party D-H secret
+between every pair of Agents – which is precisely one of the
+"Intermediate" value shared in the naive multi-party Diffie-Hellman
+computation! ([PDF], [Text])
 
 Table of Contents
 ─────────────────
@@ -57,25 +58,38 @@ Table of Contents
 
 [Diffie-Hellman] <https://en.wikipedia.org/wiki/Diffie-Hellman>
 
-[Eliptical-Curve Diffie-Hellman (ECDH),]
+[Elliptic-curve Diffie-Hellman (ECDH)]
 <https://en.wikipedia.org/wiki/Elliptic-curve_Diffie-Hellman>
 
 [crypto-licensing] <https://github.com/pjkundert/crypto-licensing.git>
+
+[PDF] <./README-DH.pdf>
+
+[Text] <./README-DH.txt>
 
 
 1 Two-Party Shared Secrets
 ══════════════════════════
 
   In this simple [Diffie-Hellman] example using integers, a public key
-  is prime modulus of the basis primitive root exponentiated to the
-  power of the private key:
+  is the primitive root \( g \) raised to the power of the private key,
+  modulo the prime \( p \):
 
   \begin{align*}
   A &= g^a \bmod p \\
   B &= g^b \bmod p
   \end{align*}
 
-  A shared secret calculation has a similar structure:
+  Where:
+  • \( p \) = prime modulus (public parameter)
+  • \( g \) = primitive root (public parameter); a number whose powers
+    generate all non-zero values modulo \( p \)
+  • \( a, b \) = private keys (secret)
+  • \( A, B \) = public keys (derived from private keys, safe to share)
+
+  A shared secret calculation has a similar structure.  By substitution,
+  we can see that our private key plus the counterparty's public key can
+  derive a common power of \( g \) – a "shared" secret value:
 
   \begin{align*}
   s_{bob}   &= A^b \bmod p \\
@@ -191,7 +205,8 @@ Table of Contents
     private keys, and sends them to everyone involved.
 
   However, in this example we'll demonstrate each party creating private
-  keys \( a, b, c \), and transmitting them to all counterparties.
+  keys \( a, b, c \), and transmitting the corresponding public keys \(
+  A, B, C \) and all intermediate values to all counterparties.
 
   Let's demonstrates that:
 
@@ -783,7 +798,7 @@ Table of Contents
   │     return curve25519_key( bytes_to_int( H( sk )))
   │ 
   │ class ECDH:
-  │     """Eliptical Curve Diffie-Hellman.
+  │     """Elliptic Curve Diffie-Hellman.
   │ 
   │     Computes intermediate secrets for sharing, and the final shared_secret when an intermediate has
   │     been receive that includes all other desired parties' Ed25519 keys, using X25519 keys derived
@@ -871,15 +886,15 @@ Table of Contents
   ━━━━━━━━━━━━━━━━━━━━━━━
    Agent  Ed25519 Pubkey 
   ───────────────────────
-   Alice  27ffdc…a02321  
-   Bob    014c19…b9130b  
-   Carol  011684…4700d4  
+   Alice  0409e6…8a1496  
+   Bob    e2faed…0e45fe  
+   Carol  fd83c8…947bec  
   ───────────────────────
    Agent  X25519 Pubkey  
   ───────────────────────
-   Alice  484833…113575  
-   Bob    428099…398987  
-   Carol  478008…867450  
+   Alice  562247…342973  
+   Bob    337444…913078  
+   Carol  523611…765020  
   ━━━━━━━━━━━━━━━━━━━━━━━
 
   Now that we have everyone's Ed25519 private keys, we can compute the
@@ -944,18 +959,18 @@ Table of Contents
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Intermediates          Value               
   ────────────────────────────────────────────
-   Alice -> Bob           484833…113575       
-   Alice -> Bob -> Carol  432425…511551       
-   Bob -> Carol           428099…398987       
-   Bob -> Carol -> Alice  534691…702878       
-   Carol -> Alice         478008…867450       
-   Carol -> Alice -> Bob  344812…829105       
+   Alice -> Bob           562247…342973       
+   Alice -> Bob -> Carol  387023…211421       
+   Bob -> Carol           337444…913078       
+   Bob -> Carol -> Alice  261448…738211       
+   Carol -> Alice         523611…765020       
+   Carol -> Alice -> Bob  316687…642684       
   ────────────────────────────────────────────
    Agent                  Final Shared Secret 
   ────────────────────────────────────────────
-   Alice                  432400…857707       
-   Bob                    432400…857707       
-   Carol                  432400…857707       
+   Alice                  514635…093583       
+   Bob                    514635…093583       
+   Carol                  514635…093583       
   ────────────────────────────────────────────
    Shared secrets match   True                
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -993,7 +1008,7 @@ Table of Contents
 ═════════════════════════════════
 
   The current implementation of `lair-keystore' is missing a few
-  features required to effectively utilize ECDH (Eliptical Curve
+  features required to effectively utilize ECDH (Elliptic Curve
   Diffie-Hellman) for Two-Party shared secrets, and support for N-party
   shared secrets is missing entirely.
 
