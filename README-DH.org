@@ -121,7 +121,7 @@ value shared in the naive multi-party Diffie-Hellman computation! ([[./README-DH
    What does Eve the eavesdropper know during this process?
 
    #+LATEX: {\scriptsize
-   #+BEGIN_SRC python :session dhke :results value
+   #+BEGIN_SRC python :session dhke :results value :exports results
      [
          [ "Parameter", "Value", "Known to Eve?" ],
          None,
@@ -227,7 +227,7 @@ value shared in the naive multi-party Diffie-Hellman computation! ([[./README-DH
 ** What Does Eve Know?
 
    #+LATEX: {\scriptsize
-   #+BEGIN_SRC python :session dhke :results value
+   #+BEGIN_SRC python :session dhke :results value :exports results
      [     
          ["Intermediate Value", "Expression", "Value", "Known to Eve?"],
          None,
@@ -823,15 +823,15 @@ value shared in the naive multi-party Diffie-Hellman computation! ([[./README-DH
    #+RESULTS:
    | Agent | Ed25519 Pubkey  |
    |-------+-----------------|
-   | Alice | 54efd1...b38d88 |
-   | Bob   | 207777...bc9217 |
-   | Carol | 3f43f7...da3098 |
+   | Alice | 216dba...b141a1 |
+   | Bob   | 95a69c...67d61c |
+   | Carol | b8e5b2...3f63ad |
    |-------+-----------------|
    | Agent | X25519 Pubkey   |
    |-------+-----------------|
-   | Alice | 547131...472332 |
-   | Bob   | 457742...269419 |
-   | Carol | 679439...017034 |
+   | Alice | 348467...458856 |
+   | Bob   | 490540...933833 |
+   | Carol | 103956...065868 |
 
    #+LATEX: }
 
@@ -897,18 +897,18 @@ value shared in the naive multi-party Diffie-Hellman computation! ([[./README-DH
    #+RESULTS:
    | Intermediates         |               Value |
    |-----------------------+---------------------|
-   | Alice -> Bob          |     547131...472332 |
-   | Alice -> Bob -> Carol |     139769...811498 |
-   | Bob -> Carol          |     457742...269419 |
-   | Bob -> Carol -> Alice |     272618...984273 |
-   | Carol -> Alice        |     679439...017034 |
-   | Carol -> Alice -> Bob |     271414...320569 |
+   | Alice -> Bob          |     348467...458856 |
+   | Alice -> Bob -> Carol |     578277...131494 |
+   | Bob -> Carol          |     490540...933833 |
+   | Bob -> Carol -> Alice |     203559...629626 |
+   | Carol -> Alice        |     103956...065868 |
+   | Carol -> Alice -> Bob |     497596...926908 |
    |-----------------------+---------------------|
    | Agent                 | Final Shared Secret |
    |-----------------------+---------------------|
-   | Alice                 |     121255...677242 |
-   | Bob                   |     121255...677242 |
-   | Carol                 |     121255...677242 |
+   | Alice                 |     128121...994858 |
+   | Bob                   |     128121...994858 |
+   | Carol                 |     128121...994858 |
    |-----------------------+---------------------|
    | Shared secrets match  |                True |
 

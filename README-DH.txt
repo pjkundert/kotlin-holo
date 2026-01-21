@@ -159,21 +159,6 @@ Table of Contents
 
   What does Eve the eavesdropper know during this process?
 
-  ┌────
-  │ [
-  │     [ "Parameter", "Value", "Known to Eve?" ],
-  │     None,
-  │     [ "g", g, "Yes" ],
-  │     [ "p", p, "Yes" ],
-  │     [ "g^a = A", A, "Yes" ],
-  │     [ "g^b = B", B, "Yes" ],
-  │     [ "a", a, "No" ],
-  │     [ "b", b, "No" ],
-  │     [ "g^{ba} = s_{alice}", s_alice, "No"],
-  │     [ "g^{ab} = s_{bob}", s_bob, "No"],
-  │ ]
-  └────
-
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Parameter           Value  Known to Eve? 
   ──────────────────────────────────────────
@@ -273,22 +258,6 @@ Table of Contents
 
 2.2 What Does Eve Know?
 ───────────────────────
-
-  ┌────
-  │ [     
-  │     ["Intermediate Value", "Expression", "Value", "Known to Eve?"],
-  │     None,
-  │     ["g^a = A", "g^a mod p", g_a, "Yes"],
-  │     ["g^b = B", "g^b mod p", g_b, "Yes"],
-  │     ["g^c = C", "g^c mod p", g_c, "Yes"],
-  │     None,
-  │     ["g^ab = s_{alice/bob}", "g^ab mod p", g_ab, "Yes"],
-  │     ["g^bc = s_{bob/carol}", "g^bc mod p", g_bc, "Yes"],
-  │     ["g^ca = s_{carol/alice}", "g^ca mod p", g_ca, "Yes"],
-  │     None,
-  │     ["g^abc = s_{alice/bob/carol}", "g^abc mod p", s_carol, "No"]
-  │ ]
-  └────
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Intermediate Value           Expression   Value  Known to Eve? 
@@ -886,15 +855,15 @@ Table of Contents
   ━━━━━━━━━━━━━━━━━━━━━━━
    Agent  Ed25519 Pubkey 
   ───────────────────────
-   Alice  0409e6…8a1496  
-   Bob    e2faed…0e45fe  
-   Carol  fd83c8…947bec  
+   Alice  c3004b…4b61d1  
+   Bob    311c14…0ce768  
+   Carol  5ff4b8…0f5e87  
   ───────────────────────
    Agent  X25519 Pubkey  
   ───────────────────────
-   Alice  562247…342973  
-   Bob    337444…913078  
-   Carol  523611…765020  
+   Alice  308341…636073  
+   Bob    295758…670173  
+   Carol  412646…272828  
   ━━━━━━━━━━━━━━━━━━━━━━━
 
   Now that we have everyone's Ed25519 private keys, we can compute the
@@ -959,18 +928,18 @@ Table of Contents
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Intermediates          Value               
   ────────────────────────────────────────────
-   Alice -> Bob           562247…342973       
-   Alice -> Bob -> Carol  387023…211421       
-   Bob -> Carol           337444…913078       
-   Bob -> Carol -> Alice  261448…738211       
-   Carol -> Alice         523611…765020       
-   Carol -> Alice -> Bob  316687…642684       
+   Alice -> Bob           308341…636073       
+   Alice -> Bob -> Carol  413951…132274       
+   Bob -> Carol           295758…670173       
+   Bob -> Carol -> Alice  421290…196184       
+   Carol -> Alice         412646…272828       
+   Carol -> Alice -> Bob  469183…894079       
   ────────────────────────────────────────────
    Agent                  Final Shared Secret 
   ────────────────────────────────────────────
-   Alice                  514635…093583       
-   Bob                    514635…093583       
-   Carol                  514635…093583       
+   Alice                  646518…013869       
+   Bob                    646518…013869       
+   Carol                  646518…013869       
   ────────────────────────────────────────────
    Shared secrets match   True                
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
