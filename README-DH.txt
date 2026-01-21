@@ -804,9 +804,9 @@ Table of Contents
   │ 
   │     def compute_final_secret(self, received_value: int, included: set[ int ] ):
   │         """Compute final shared secret, from value with all other desired keys already included."""
-  │         assert included | {self.ed25519_public} == self.desired, \
-  │             f"Intermediate value is missing keys: {', '.join( vk.hex for vk in self.desired - included)}" \
-  │             f"; should only have been missing: {self.ed25519_public}"
+  │         assert self.ed25519_public not in included and included | {self.ed25519_public} == self.desired, \
+  │             f"Intermediate value is missing keys: {', '.join( vk.hex() for vk in (self.desired - included))}" \
+  │             f"; should only have been missing: {self.ed25519_public.hex()}"
   │         self.shared_secret = curve25519(self.x25519_private, received_value)
   │         return self.shared_secret, self.desired
   └────
@@ -855,15 +855,15 @@ Table of Contents
   ━━━━━━━━━━━━━━━━━━━━━━━
    Agent  Ed25519 Pubkey 
   ───────────────────────
-   Alice  c3004b…4b61d1  
-   Bob    311c14…0ce768  
-   Carol  5ff4b8…0f5e87  
+   Alice  8bbaed…eaf95b  
+   Bob    491aa2…d59028  
+   Carol  6e2671…cc5dcb  
   ───────────────────────
    Agent  X25519 Pubkey  
   ───────────────────────
-   Alice  308341…636073  
-   Bob    295758…670173  
-   Carol  412646…272828  
+   Alice  273556…859503  
+   Bob    298290…044998  
+   Carol  497678…161840  
   ━━━━━━━━━━━━━━━━━━━━━━━
 
   Now that we have everyone's Ed25519 private keys, we can compute the
@@ -928,18 +928,18 @@ Table of Contents
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Intermediates          Value               
   ────────────────────────────────────────────
-   Alice -> Bob           308341…636073       
-   Alice -> Bob -> Carol  413951…132274       
-   Bob -> Carol           295758…670173       
-   Bob -> Carol -> Alice  421290…196184       
-   Carol -> Alice         412646…272828       
-   Carol -> Alice -> Bob  469183…894079       
+   Alice -> Bob           273556…859503       
+   Alice -> Bob -> Carol  179877…942139       
+   Bob -> Carol           298290…044998       
+   Bob -> Carol -> Alice  510207…599822       
+   Carol -> Alice         497678…161840       
+   Carol -> Alice -> Bob  560139…150858       
   ────────────────────────────────────────────
    Agent                  Final Shared Secret 
   ────────────────────────────────────────────
-   Alice                  646518…013869       
-   Bob                    646518…013869       
-   Carol                  646518…013869       
+   Alice                  189033…685097       
+   Bob                    189033…685097       
+   Carol                  189033…685097       
   ────────────────────────────────────────────
    Shared secrets match   True                
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

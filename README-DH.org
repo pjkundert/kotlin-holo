@@ -771,9 +771,9 @@ value shared in the naive multi-party Diffie-Hellman computation! ([[./README-DH
 
         def compute_final_secret(self, received_value: int, included: set[ int ] ):
             """Compute final shared secret, from value with all other desired keys already included."""
-            assert included | {self.ed25519_public} == self.desired, \
-                f"Intermediate value is missing keys: {', '.join( vk.hex for vk in self.desired - included)}" \
-                f"; should only have been missing: {self.ed25519_public}"
+            assert self.ed25519_public not in included and included | {self.ed25519_public} == self.desired, \
+                f"Intermediate value is missing keys: {', '.join( vk.hex() for vk in (self.desired - included))}" \
+                f"; should only have been missing: {self.ed25519_public.hex()}"
             self.shared_secret = curve25519(self.x25519_private, received_value)
             return self.shared_secret, self.desired
   #+END_SRC
@@ -823,15 +823,15 @@ value shared in the naive multi-party Diffie-Hellman computation! ([[./README-DH
    #+RESULTS:
    | Agent | Ed25519 Pubkey  |
    |-------+-----------------|
-   | Alice | 216dba...b141a1 |
-   | Bob   | 95a69c...67d61c |
-   | Carol | b8e5b2...3f63ad |
+   | Alice | c029ce...b9a13b |
+   | Bob   | 5aa833...099ed3 |
+   | Carol | a33c05...109501 |
    |-------+-----------------|
    | Agent | X25519 Pubkey   |
    |-------+-----------------|
-   | Alice | 348467...458856 |
-   | Bob   | 490540...933833 |
-   | Carol | 103956...065868 |
+   | Alice | 235663...357614 |
+   | Bob   | 515929...499814 |
+   | Carol | 279501...318265 |
 
    #+LATEX: }
 
@@ -897,18 +897,18 @@ value shared in the naive multi-party Diffie-Hellman computation! ([[./README-DH
    #+RESULTS:
    | Intermediates         |               Value |
    |-----------------------+---------------------|
-   | Alice -> Bob          |     348467...458856 |
-   | Alice -> Bob -> Carol |     578277...131494 |
-   | Bob -> Carol          |     490540...933833 |
-   | Bob -> Carol -> Alice |     203559...629626 |
-   | Carol -> Alice        |     103956...065868 |
-   | Carol -> Alice -> Bob |     497596...926908 |
+   | Alice -> Bob          |     235663...357614 |
+   | Alice -> Bob -> Carol |     294865...118328 |
+   | Bob -> Carol          |     515929...499814 |
+   | Bob -> Carol -> Alice |     566144...885753 |
+   | Carol -> Alice        |     279501...318265 |
+   | Carol -> Alice -> Bob |     258669...679388 |
    |-----------------------+---------------------|
    | Agent                 | Final Shared Secret |
    |-----------------------+---------------------|
-   | Alice                 |     128121...994858 |
-   | Bob                   |     128121...994858 |
-   | Carol                 |     128121...994858 |
+   | Alice                 |     378135...376897 |
+   | Bob                   |     378135...376897 |
+   | Carol                 |     378135...376897 |
    |-----------------------+---------------------|
    | Shared secrets match  |                True |
 
